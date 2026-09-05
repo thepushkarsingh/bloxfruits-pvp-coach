@@ -7,7 +7,7 @@ from google import genai
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 SENDER_APP_PASSWORD = os.environ.get("SENDER_APP_PASSWORD")
 SENDER_EMAIL = "YOUR_EMAIL@gmail.com"     # Make sure your email is here
-RECIPIENT_EMAIL = "YOUR_EMAIL@gmail.com"  # Make sure your email is here
+RECIPIENT_EMAIL = "superkunnusingh@gmail.com" # Make sure your email is here
 
 # Start date to track day progression
 START_DATE = datetime(2026, 1, 1)
