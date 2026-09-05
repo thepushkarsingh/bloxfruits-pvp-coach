@@ -2,8 +2,8 @@ name: Daily Blox Fruits Tip
 
 on:
   schedule:
-    - cron: '0 8 * * *' # Runs automatically every day at 8:00 AM UTC
-  workflow_dispatch: # Allows manual testing
+    - cron: '0 8 * * *'
+  workflow_dispatch:
 
 jobs:
   send-email:
@@ -20,4 +20,6 @@ jobs:
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           SENDER_APP_PASSWORD: ${{ secrets.SENDER_APP_PASSWORD }}
+          SENDER_EMAIL: "thepushkarsingh@gmail.com"
+          RECIPIENT_EMAIL: "superkunnusingh@gmail.com"
         run: python coach.py
