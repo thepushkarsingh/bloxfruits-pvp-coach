@@ -1,5 +1,6 @@
 import os
 import smtplib
+import time
 from datetime import datetime
 from email.mime.text import MIMEText
 from google import genai
@@ -50,11 +51,18 @@ def generate_pvp_tip() -> str:
     - Keep total email length under 200 words using bullet points.
     """
     
-    response = client.models.generate_content(
-        model="gemini-3.6-flash",
-        contents=prompt,
-    )
-    return response.text
+    # Retry up to 3 times if Gemini encounters high traffic
+    for attempt in range(3):
+        try:
+            response = client.models.generate_content(
+                model="gemini-3.6-flash",
+                contents=prompt,
+            )
+            return response.text
+        except Exception as e:
+            if attempt == 2:
+                raise e
+            time.sleep(5)
 
 def send_email(content: str):
     msg = MIMEText(content, "plain")
