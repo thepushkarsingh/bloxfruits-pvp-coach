@@ -1,0 +1,23 @@
+name: Daily Blox Fruits Tip
+
+on:
+  schedule:
+    - cron: '0 8 * * *' # Runs automatically every day at 8:00 AM UTC
+  workflow_dispatch: # Allows manual testing
+
+jobs:
+  send-email:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: pip install google-genai
+      - name: Run Coach Script
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          SENDER_APP_PASSWORD: ${{ secrets.SENDER_APP_PASSWORD }}
+        run: python coach.py
