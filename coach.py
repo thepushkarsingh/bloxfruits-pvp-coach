@@ -64,16 +64,25 @@ def generate_pvp_tip() -> str:
                 raise e
             time.sleep(5)
 
-def send_email(content: str):
-    msg = MIMEText(content, "plain")
-    msg["Subject"] = f"⚔️ Blox Fruits Coaching | Day Progress & Tip"
-    msg["From"] = SENDER_EMAIL
-    msg["To"] = RECIPIENT_EMAIL
+def send_email(html_content):
+    # Pull values from environment variables set in GitHub Workflow
+    sender_email = os.environ.get("GMAIL_USER")
+    sender_pass = os.environ.get("GMAIL_PASS")
+    
+    # Explicit check to throw a clear error if secrets are missing
+    if not sender_email or not sender_pass:
+        raise ValueError("Missing GMAIL_USER or GMAIL_PASS environment variables.")
 
-    with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
-        server.login(SENDER_EMAIL, SENDER_APP_PASSWORD)
-        server.sendmail(SENDER_EMAIL, RECIPIENT_EMAIL, msg.as_string())
+    recipient_email = sender_email
 
-if __name__ == "__main__":
-    tip = generate_pvp_tip()
-    send_email(tip)
+    msg = MIMEMultipart("alternative")
+    msg["Subject"] = "Your Daily Executive Growth & Wellness Digest"
+    msg["From"] = sender_email
+    msg["To"] = recipient_email
+
+    msg.attach(MIMEText(html_content, "html"))
+
+    with smtplib.SMTP("smtp.gmail.com", 587, timeout=30) as server:
+        server.starttls()
+        server.login(sender_email, sender_pass)
+        server.sendmail(sender_email, recipient_email, msg.as_string())
