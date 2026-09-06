@@ -2,13 +2,15 @@ import os
 import smtplib
 import time
 from datetime import datetime
+from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from google import genai
 
+# Read environment variables set in daily.yml
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 SENDER_APP_PASSWORD = os.environ.get("SENDER_APP_PASSWORD")
-SENDER_EMAIL = os.environ.get("SENDER_EMAIL")
-RECIPIENT_EMAIL = os.environ.get("RECIPIENT_EMAIL")
+SENDER_EMAIL = os.environ.get("SENDER_EMAIL", "thepushkarsingh@gmail.com")
+RECIPIENT_EMAIL = os.environ.get("RECIPIENT_EMAIL", "superkunnusingh@gmail.com")
 
 # Start date to track day progression
 START_DATE = datetime(2026, 1, 1)
@@ -64,27 +66,28 @@ def generate_pvp_tip() -> str:
                 raise e
             time.sleep(5)
 
-def send_email(html_content):
-    sender_email = os.environ.get("GMAIL_USER")
-    sender_pass = os.environ.get("GMAIL_PASS")
-    
-    if not sender_email or not sender_pass:
-        raise ValueError("Missing GMAIL_USER or GMAIL_PASS environment variables.")
+def send_email(content: str):
+    if not SENDER_EMAIL or not SENDER_APP_PASSWORD:
+        raise ValueError("Missing SENDER_EMAIL or SENDER_APP_PASSWORD environment variables.")
 
-    recipient_email = sender_email
+    day_count, _, _ = get_current_day_and_tier()
 
     msg = MIMEMultipart("alternative")
-    msg["Subject"] = "Your Daily Executive Growth & Wellness Digest"
-    msg["From"] = f"Daily AI Coach <{sender_email}>"
-    msg["To"] = recipient_email
+    msg["Subject"] = f"⚔️ Blox Fruits PvP Coaching | Day {day_count} Lesson"
+    msg["From"] = f"Blox Fruits Coach <{SENDER_EMAIL}>"
+    msg["To"] = RECIPIENT_EMAIL
     
-    # Priority headers to prevent Gmail spam filtering
+    # Priority headers to assist deliverability
     msg["X-Priority"] = "1"
     msg["X-MSMail-Priority"] = "High"
 
-    msg.attach(MIMEText(html_content, "html"))
+    msg.attach(MIMEText(content, "plain"))
 
     with smtplib.SMTP("smtp.gmail.com", 587, timeout=30) as server:
         server.starttls()
-        server.login(sender_email, sender_pass)
-        server.sendmail(sender_email, recipient_email, msg.as_string())
+        server.login(SENDER_EMAIL, SENDER_APP_PASSWORD)
+        server.sendmail(SENDER_EMAIL, RECIPIENT_EMAIL, msg.as_string())
+
+if __name__ == "__main__":
+    tip = generate_pvp_tip()
+    send_email(tip)
