@@ -5,6 +5,7 @@ from datetime import datetime
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from google import genai
+from google.genai.errors import ServerError
 
 # Read environment variables set in daily.yml
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
@@ -31,6 +32,7 @@ def get_current_day_and_tier():
         
     return day_count, tier, difficulty
 
+
 def generate_pvp_tip() -> str:
     day_count, tier, difficulty = get_current_day_and_tier()
     client = genai.Client(api_key=GEMINI_API_KEY)
@@ -53,18 +55,22 @@ def generate_pvp_tip() -> str:
     - Keep total email length under 200 words using bullet points.
     """
     
-    # Retry up to 3 times if Gemini encounters high traffic
-    for attempt in range(3):
+    # Retry loop with exponential backoff for 503 capacity spikes
+    retries = 5
+    for attempt in range(retries):
         try:
             response = client.models.generate_content(
                 model="gemini-3.6-flash",
                 contents=prompt,
             )
             return response.text
-        except Exception as e:
-            if attempt == 2:
+        except ServerError as e:
+            if attempt == retries - 1:
                 raise e
-            time.sleep(5)
+            wait_time = (2 ** attempt) * 5  # Waits 5s, 10s, 20s, 40s
+            time.sleep(wait_time)
+        except Exception as e:
+            raise e
 
 def send_email(content: str):
     if not SENDER_EMAIL or not SENDER_APP_PASSWORD:
