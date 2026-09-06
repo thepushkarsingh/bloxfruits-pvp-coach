@@ -65,11 +65,9 @@ def generate_pvp_tip() -> str:
             time.sleep(5)
 
 def send_email(html_content):
-    # Pull values from environment variables set in GitHub Workflow
     sender_email = os.environ.get("GMAIL_USER")
     sender_pass = os.environ.get("GMAIL_PASS")
     
-    # Explicit check to throw a clear error if secrets are missing
     if not sender_email or not sender_pass:
         raise ValueError("Missing GMAIL_USER or GMAIL_PASS environment variables.")
 
@@ -77,8 +75,12 @@ def send_email(html_content):
 
     msg = MIMEMultipart("alternative")
     msg["Subject"] = "Your Daily Executive Growth & Wellness Digest"
-    msg["From"] = sender_email
+    msg["From"] = f"Daily AI Coach <{sender_email}>"
     msg["To"] = recipient_email
+    
+    # Priority headers to prevent Gmail spam filtering
+    msg["X-Priority"] = "1"
+    msg["X-MSMail-Priority"] = "High"
 
     msg.attach(MIMEText(html_content, "html"))
 
